@@ -11,13 +11,18 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!description.trim()) return;
 
+    if (!description.trim()) {
+      setError("Please add a short description.");
+      return;
+    }
+    setError("");
     setSubmitting(true);
     try {
       await onSubmit({
@@ -62,12 +67,19 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
           </label>
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              if (error) setError("");
+            }}
             placeholder="Describe what you noticed..."
             rows={3}
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+            className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${
+              error
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-red-400"
+            }`}
           />
+          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
 
           <div className="flex justify-end gap-2 mt-5">
             <button

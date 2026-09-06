@@ -11,8 +11,9 @@ const MOCK_SAFE_ZONES = [
   { id: 2, name: "CSI Hospital", type: "hospital", distance: "1.2 km" },
   { id: 3, name: "Katpadi Railway Station", type: "metro", distance: "0.5 km" },
   { id: 4, name: "24x7 Medical Store", type: "open24", distance: "0.3 km" },
+  { id: 5, name: "VIT Main Gate Police Booth", type: "police", distance: "1.5 km" },
+  { id: 6, name: "Global Hospital", type: "hospital", distance: "2.0 km" },
 ];
-
 // NOTE [Member 1]: This whole Home.jsx is a TEMPORARY test page for Member 5's
 // components (Report + Safe Zones). Once Member 1's real Home.jsx (dark theme,
 // map on right, sidebar with route cards) is ready, move only the JSX blocks
@@ -58,18 +59,18 @@ export default function Home() {
       {/* === END BLOCK === */}
 
       {/* Temporary visibility for reports - remove once real UI decided */}
-      {reports.length > 0 && (
-        <>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Recent Reports</h2>
-          <div className="space-y-2">
-            {reports.map((r, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-lg p-3 text-sm">
-                <span className="font-medium text-red-600">{r.category}</span> — {r.description}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+      <h2 className="text-lg font-semibold text-gray-800 mb-3">Recent Reports</h2>
+      {reports.length > 0 ? (
+        <div className="space-y-2">
+          {reports.map((r, i) => (
+            <div key={i} className="bg-white border border-gray-200 rounded-lg p-3 text-sm">
+              <span className="font-medium text-red-600">{r.category}</span> — {r.description}
+            </div>
+          ))}
+        </div>
+) : (
+  <p className="text-sm text-gray-400 italic">No reports yet. Be the first to report an issue.</p>
+)}
 
       {/* === MOVE INTO MEMBER 1's LAYOUT: Report modal (always render, controlled by state) === */}
       <ReportModal
