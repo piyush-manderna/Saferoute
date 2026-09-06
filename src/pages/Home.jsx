@@ -1,8 +1,11 @@
-
 import { useState } from "react";
 import ReportModal from "../components/ReportModal";
 import SafeZoneCard from "../components/SafeZoneCard";
 
+// TODO [Member 3]: Replace this mock array with a real call to getSafeZones()
+// from "../services/firestore" once it's ready. Example:
+// const [safeZones, setSafeZones] = useState([]);
+// useEffect(() => { getSafeZones().then(setSafeZones); }, []);
 const MOCK_SAFE_ZONES = [
   { id: 1, name: "Katpadi Police Station", type: "police", distance: "0.8 km" },
   { id: 2, name: "CSI Hospital", type: "hospital", distance: "1.2 km" },
@@ -10,13 +13,25 @@ const MOCK_SAFE_ZONES = [
   { id: 4, name: "24x7 Medical Store", type: "open24", distance: "0.3 km" },
 ];
 
+// NOTE [Member 1]: This whole Home.jsx is a TEMPORARY test page for Member 5's
+// components (Report + Safe Zones). Once Member 1's real Home.jsx (dark theme,
+// map on right, sidebar with route cards) is ready, move only the JSX blocks
+// marked below into their layout. This file itself gets discarded.
+
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reports, setReports] = useState([]);
 
+  // TODO [Member 3]: Replace this stub with real Firestore calls:
+  // import { submitReport, getReports } from "../services/firestore";
+  // const handleReportSubmit = async (data) => {
+  //   await submitReport(data);
+  //   const updated = await getReports();
+  //   setReports(updated);
+  // };
   const handleReportSubmit = async (data) => {
     console.log("New report submitted:", data);
-    setReports((prev) => [...prev, data]); // temporary local state, no Firestore yet
+    setReports((prev) => [...prev, data]);
   };
 
   return (
@@ -24,23 +39,25 @@ export default function Home() {
       <h1 className="text-2xl font-bold text-gray-900 mb-1">SafeRoute</h1>
       <p className="text-sm text-gray-500 mb-6">Katpadi, Tamil Nadu</p>
 
-      {/* Report button */}
+      {/* === MOVE INTO MEMBER 1's LAYOUT: Report trigger button === */}
       <button
         onClick={() => setIsModalOpen(true)}
         className="mb-8 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600"
       >
         Report an Issue
       </button>
+      {/* === END BLOCK === */}
 
-      {/* Safe Zones section */}
+      {/* === MOVE INTO MEMBER 1's LAYOUT: Safe Zones section === */}
       <h2 className="text-lg font-semibold text-gray-800 mb-3">Nearby Safe Zones</h2>
       <div className="grid gap-3 sm:grid-cols-2 mb-8">
         {MOCK_SAFE_ZONES.map((zone) => (
           <SafeZoneCard key={zone.id} zone={zone} />
         ))}
       </div>
+      {/* === END BLOCK === */}
 
-      {/* Submitted reports (temporary, for demo visibility) */}
+      {/* Temporary visibility for reports - remove once real UI decided */}
       {reports.length > 0 && (
         <>
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Recent Reports</h2>
@@ -54,11 +71,13 @@ export default function Home() {
         </>
       )}
 
+      {/* === MOVE INTO MEMBER 1's LAYOUT: Report modal (always render, controlled by state) === */}
       <ReportModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleReportSubmit}
       />
+      {/* === END BLOCK === */}
     </div>
   );
 }
