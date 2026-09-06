@@ -4,10 +4,6 @@ import { useState } from "react";
 import ReportModal from "../components/ReportModal";
 import SafeZoneCard from "../components/SafeZoneCard";
 
-// TODO [Member 3]: Replace this mock array with a real call to getSafeZones()
-// from "../services/firestore" once it's ready. Example:
-// const [safeZones, setSafeZones] = useState([]);
-// useEffect(() => { getSafeZones().then(setSafeZones); }, []);
 const MOCK_SAFE_ZONES = [
   { id: 1, name: "Katpadi Police Station", type: "police", distance: "0.8 km" },
   { id: 2, name: "CSI Hospital", type: "hospital", distance: "1.2 km" },
@@ -16,22 +12,12 @@ const MOCK_SAFE_ZONES = [
   { id: 5, name: "VIT Main Gate Police Booth", type: "police", distance: "1.5 km" },
   { id: 6, name: "Global Hospital", type: "hospital", distance: "2.0 km" },
 ];
-// NOTE [Member 1]: This whole Home.jsx is a TEMPORARY test page for Member 5's
-// components (Report + Safe Zones). Once Member 1's real Home.jsx (dark theme,
-// map on right, sidebar with route cards) is ready, move only the JSX blocks
-// marked below into their layout. This file itself gets discarded.
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reports, setReports] = useState([]);
 
-  // TODO [Member 3]: Replace this stub with real Firestore calls:
-  // import { submitReport, getReports } from "../services/firestore";
-  // const handleReportSubmit = async (data) => {
-  //   await submitReport(data);
-  //   const updated = await getReports();
-  //   setReports(updated);
-  // };
+  
   const handleReportSubmit = async (data) => {
     console.log("New report submitted:", data);
     setReports((prev) => [...prev, data]);
