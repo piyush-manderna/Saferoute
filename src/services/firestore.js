@@ -16,3 +16,4 @@ export async function getSafeZones() {
   // Should fetch safe_zones collection: police, hospital, metro, 24x7 spaces
   throw new Error("getSafeZones() not implemented yet — waiting on Member 3");
 }
+
