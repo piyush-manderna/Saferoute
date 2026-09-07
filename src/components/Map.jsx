@@ -17,20 +17,26 @@ const INITIAL_CENTER = [79.1550, 12.9692];
 function Map() {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [startSuggestions, setStartSuggestions] = useState([]);
-const [destinationSuggestions, setDestinationSuggestions] = useState([]);
 
-const [selectedStart, setSelectedStart] = useState(null);
-const [selectedDestination, setSelectedDestination] = useState(null);
+  const [startSuggestions, setStartSuggestions] = useState([]);
+  const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+
+  const [selectedStart, setSelectedStart] = useState(null);
+  const [selectedDestination, setSelectedDestination] = useState(null);
+
   const startMarker = useRef(null);
   const destinationMarker = useRef(null);
+  const currentLocationMarker = useRef(null);
 
   const [start, setStart] = useState("VIT Vellore");
   const [destination, setDestination] = useState(
     "Katpadi Railway Station, Vellore, Tamil Nadu, India"
   );
+
   const [loading, setLoading] = useState(false);
   const [routes, setRoutes] = useState([]);
+
+  // MAP INITIALIZATION
   useEffect(() => {
     if (map.current) return;
 
@@ -53,45 +59,159 @@ const [selectedDestination, setSelectedDestination] = useState(null);
       map.current = null;
     };
   }, []);
-async function handleStartChange(value) {
-  setStart(value);
-  setSelectedStart(null);
 
-  if (!value.trim()) {
-    setStartSuggestions([]);
-    return;
+  // CURRENT LOCATION
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.error(
+        "Geolocation is not supported by this browser."
+      );
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const longitude = position.coords.longitude;
+        const latitude = position.coords.latitude;
+
+        console.log(
+          "CURRENT LOCATION:",
+          [longitude, latitude]
+        );
+
+        if (!map.current) return;
+
+        // CREATE CURRENT LOCATION MARKER
+        if (!currentLocationMarker.current) {
+          const markerElement = document.createElement("div");
+
+          markerElement.innerHTML = `
+            <div style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              cursor: pointer;
+            ">
+              <div style="
+                width: 42px;
+                height: 42px;
+                border-radius: 50%;
+                background: #2563eb;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                border: 3px solid white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+              ">
+                👤
+              </div>
+
+              <div style="
+                margin-top: 4px;
+                padding: 3px 7px;
+                background: white;
+                border-radius: 5px;
+                font-size: 11px;
+                font-weight: bold;
+                white-space: nowrap;
+                box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+              ">
+                CURRENT LOCATION
+              </div>
+            </div>
+          `;
+
+          currentLocationMarker.current = new Marker({
+            element: markerElement
+          })
+            .setLngLat([longitude, latitude])
+            .addTo(map.current);
+
+          // MOVE MAP TO CURRENT LOCATION
+          map.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 15
+          });
+        } else {
+          // UPDATE EXISTING MARKER
+          currentLocationMarker.current.setLngLat([
+            longitude,
+            latitude
+          ]);
+        }
+      },
+      (error) => {
+        console.error("Location error:", error);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 10000
+      }
+    );
+
+    // STOP TRACKING WHEN COMPONENT IS REMOVED
+    return () => {
+      navigator.geolocation.clearWatch(watchId);
+
+      if (currentLocationMarker.current) {
+        currentLocationMarker.current.remove();
+        currentLocationMarker.current = null;
+      }
+    };
+  }, []);
+
+  // START LOCATION AUTOSUGGESTIONS
+  async function handleStartChange(value) {
+    setStart(value);
+    setSelectedStart(null);
+
+    if (!value.trim()) {
+      setStartSuggestions([]);
+      return;
+    }
+
+    try {
+      const results = await geocodeSuggestions(value);
+      setStartSuggestions(results);
+    } catch (error) {
+      console.error(
+        "Start suggestions error:",
+        error
+      );
+      setStartSuggestions([]);
+    }
   }
 
-  try {
-    const results = await geocodeSuggestions(value);
-    setStartSuggestions(results);
-  } catch (error) {
-    console.error("Start suggestions error:", error);
-    setStartSuggestions([]);
+  // DESTINATION AUTOSUGGESTIONS
+  async function handleDestinationChange(value) {
+    setDestination(value);
+    setSelectedDestination(null);
+
+    if (!value.trim()) {
+      setDestinationSuggestions([]);
+      return;
+    }
+
+    try {
+      const results = await geocodeSuggestions(value);
+      setDestinationSuggestions(results);
+    } catch (error) {
+      console.error(
+        "Destination suggestions error:",
+        error
+      );
+      setDestinationSuggestions([]);
+    }
   }
-}
 
-async function handleDestinationChange(value) {
-  setDestination(value);
-  setSelectedDestination(null);
-
-  if (!value.trim()) {
-    setDestinationSuggestions([]);
-    return;
-  }
-
-  try {
-    const results = await geocodeSuggestions(value);
-    setDestinationSuggestions(results);
-  } catch (error) {
-    console.error("Destination suggestions error:", error);
-    setDestinationSuggestions([]);
-  }
-}
-
+  // FIND ROUTES
   async function findRoutes() {
     if (!start.trim() || !destination.trim()) {
-      console.error("Please enter both locations");
+      console.error(
+        "Please enter both locations"
+      );
       return;
     }
 
@@ -99,26 +219,32 @@ async function handleDestinationChange(value) {
 
     try {
       // 1. GET START COORDINATES
-let startCoordinates;
+      let startCoordinates;
 
-if (selectedStart) {
-  startCoordinates = selectedStart.coordinates;
-} else {
-  const startLocation = await geocodeLocation(start);
-  startCoordinates = startLocation.coordinates;
-}
+      if (selectedStart) {
+        startCoordinates =
+          selectedStart.coordinates;
+      } else {
+        const startLocation =
+          await geocodeLocation(start);
 
-// 2. GET DESTINATION COORDINATES
-let endCoordinates;
+        startCoordinates =
+          startLocation.coordinates;
+      }
 
-if (selectedDestination) {
-  endCoordinates = selectedDestination.coordinates;
-} else {
-  const destinationLocation =
-    await geocodeLocation(destination);
+      // 2. GET DESTINATION COORDINATES
+      let endCoordinates;
 
-  endCoordinates = destinationLocation.coordinates;
-}
+      if (selectedDestination) {
+        endCoordinates =
+          selectedDestination.coordinates;
+      } else {
+        const destinationLocation =
+          await geocodeLocation(destination);
+
+        endCoordinates =
+          destinationLocation.coordinates;
+      }
 
       console.log(
         "START COORDINATES:",
@@ -130,23 +256,24 @@ if (selectedDestination) {
         endCoordinates
       );
 
-      // 4. REMOVE OLD MARKERS
+      // 3. REMOVE OLD START MARKER
       if (startMarker.current) {
         startMarker.current.remove();
       }
 
+      // 4. REMOVE OLD DESTINATION MARKER
       if (destinationMarker.current) {
         destinationMarker.current.remove();
       }
 
-      // 5. ADD NEW START MARKER
+      // 5. ADD START MARKER
       startMarker.current = new Marker({
         color: "blue"
       })
         .setLngLat(startCoordinates)
         .addTo(map.current);
 
-      // 6. ADD NEW DESTINATION MARKER
+      // 6. ADD DESTINATION MARKER
       destinationMarker.current = new Marker({
         color: "red"
       })
@@ -179,19 +306,25 @@ if (selectedDestination) {
       });
 
       // 8. FETCH ROUTES
-              const routeResults = await fetchRoutes(
-          startCoordinates,
-          endCoordinates
-        );
+      const routeResults = await fetchRoutes(
+        startCoordinates,
+        endCoordinates
+      );
 
-        console.log("Routes received:", routeResults);
+      console.log(
+        "Routes received:",
+        routeResults
+      );
 
-        setRoutes(routeResults);
+      setRoutes(routeResults);
 
-        if (!routeResults || routeResults.length === 0) {
-          console.error("No routes found");
-          return;
-        }
+      if (
+        !routeResults ||
+        routeResults.length === 0
+      ) {
+        console.error("No routes found");
+        return;
+      }
 
       // 9. ROUTE COLORS
       const routeColors = [
@@ -201,7 +334,7 @@ if (selectedDestination) {
       ];
 
       // 10. DRAW ROUTES
-       routeResults.forEach((route, index) => {
+      routeResults.forEach((route, index) => {
         const sourceId =
           `route-source-${route.id}`;
 
@@ -223,56 +356,71 @@ if (selectedDestination) {
           id: layerId,
           type: "line",
           source: sourceId,
+
           layout: {
             "line-join": "round",
             "line-cap": "round"
           },
+
           paint: {
             "line-color":
-              routeColors[index] || "#3b82f6",
+              routeColors[index] ||
+              "#3b82f6",
+
             "line-width": 6,
             "line-opacity": 0.8
           }
         });
 
         // 11. CLICK ROUTE TO HIGHLIGHT
-        map.current.on("click", layerId, () => {
-          routeResults.forEach((otherRoute) => {
-            const otherLayerId =
-              `route-layer-${otherRoute.id}`;
+        map.current.on(
+          "click",
+          layerId,
+          () => {
+            routeResults.forEach(
+              (otherRoute) => {
+                const otherLayerId =
+                  `route-layer-${otherRoute.id}`;
 
-            if (map.current.getLayer(otherLayerId)) {
-              map.current.setPaintProperty(
-                otherLayerId,
-                "line-opacity",
-                otherRoute.id === route.id
-                  ? 1
-                  : 0.3
-              );
+                if (
+                  map.current.getLayer(
+                    otherLayerId
+                  )
+                ) {
+                  map.current.setPaintProperty(
+                    otherLayerId,
+                    "line-opacity",
+                    otherRoute.id === route.id
+                      ? 1
+                      : 0.3
+                  );
 
-              map.current.setPaintProperty(
-                otherLayerId,
-                "line-width",
-                otherRoute.id === route.id
-                  ? 8
-                  : 4
-              );
-            }
-          });
+                  map.current.setPaintProperty(
+                    otherLayerId,
+                    "line-width",
+                    otherRoute.id === route.id
+                      ? 8
+                      : 4
+                  );
+                }
+              }
+            );
 
-          console.log(
-            "Selected route:",
-            route
-          );
-        });
+            console.log(
+              "Selected route:",
+              route
+            );
+          }
+        );
 
         // 12. CHANGE CURSOR
         map.current.on(
           "mouseenter",
           layerId,
           () => {
-            map.current.getCanvas().style.cursor =
-              "pointer";
+            map.current
+              .getCanvas()
+              .style.cursor = "pointer";
           }
         );
 
@@ -280,26 +428,31 @@ if (selectedDestination) {
           "mouseleave",
           layerId,
           () => {
-            map.current.getCanvas().style.cursor =
-              "";
+            map.current
+              .getCanvas()
+              .style.cursor = "";
           }
         );
       });
 
       // 13. FIT MAP TO ROUTES
-      const allCoordinates = routeResults.flatMap(
-        (route) => route.geometry.coordinates
-      );
+      const allCoordinates =
+        routeResults.flatMap(
+          (route) =>
+            route.geometry.coordinates
+        );
 
       if (allCoordinates.length > 0) {
-        const bounds = allCoordinates.reduce(
-          (bounds, coordinate) =>
-            bounds.extend(coordinate),
-          new LngLatBounds(
-            allCoordinates[0],
-            allCoordinates[0]
-          )
-        );
+        const bounds =
+          allCoordinates.reduce(
+            (bounds, coordinate) =>
+              bounds.extend(coordinate),
+
+            new LngLatBounds(
+              allCoordinates[0],
+              allCoordinates[0]
+            )
+          );
 
         map.current.fitBounds(bounds, {
           padding: 60
@@ -307,15 +460,18 @@ if (selectedDestination) {
       }
 
       // 14. DISPLAY DISTANCE AND TIME
-      routes.forEach((route) => {
+      routeResults.forEach((route) => {
         console.log({
           route: route.id,
+
           distanceKm: (
             route.distance / 1000
           ).toFixed(2),
-          durationMinutes: Math.round(
-            route.duration / 60
-          )
+
+          durationMinutes:
+            Math.round(
+              route.duration / 60
+            )
         });
       });
     } catch (error) {
@@ -347,10 +503,16 @@ if (selectedDestination) {
           padding: "15px",
           borderRadius: "10px",
           width: "300px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.2)"
+          boxShadow:
+            "0 2px 10px rgba(0,0,0,0.2)"
         }}
       >
-        <div style={{ marginBottom: "10px" }}>
+        {/* START LOCATION */}
+        <div
+          style={{
+            marginBottom: "10px"
+          }}
+        >
           <label
             style={{
               display: "block",
@@ -365,7 +527,9 @@ if (selectedDestination) {
             type="text"
             value={start}
             onChange={(e) =>
-               handleStartChange(e.target.value)
+              handleStartChange(
+                e.target.value
+              )
             }
             placeholder="Enter starting location"
             style={{
@@ -376,48 +540,65 @@ if (selectedDestination) {
               borderRadius: "5px"
             }}
           />
-          {startSuggestions.length > 0 && (
-  <div
-    style={{
-      border: "1px solid #ddd",
-      borderRadius: "5px",
-      marginTop: "5px",
-      background: "white"
-    }}
-  >
-    {startSuggestions.map((suggestion, index) => (
-      <div
-        key={index}
-        onClick={() => {
-          setStart(suggestion.name);
-          setSelectedStart(suggestion);
-          setStartSuggestions([]);
-        }}
-        style={{
-          padding: "8px",
-          cursor: "pointer",
-          borderBottom: "1px solid #eee"
-        }}
-      >
-        <strong>{suggestion.name}</strong>
 
-        {suggestion.address && (
-          <div
-            style={{
-              fontSize: "12px",
-              color: "#666"
-            }}
-          >
-            {suggestion.address}
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-)}
+          {startSuggestions.length > 0 && (
+            <div
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "5px",
+                marginTop: "5px",
+                background: "white"
+              }}
+            >
+              {startSuggestions.map(
+                (suggestion, index) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      setStart(
+                        suggestion.name
+                      );
+
+                      setSelectedStart(
+                        suggestion
+                      );
+
+                      setStartSuggestions([]);
+                    }}
+                    style={{
+                      padding: "8px",
+                      cursor: "pointer",
+                      borderBottom:
+                        "1px solid #eee"
+                    }}
+                  >
+                    <strong>
+                      {suggestion.name}
+                    </strong>
+
+                    {suggestion.address && (
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#666"
+                        }}
+                      >
+                        {suggestion.address}
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+          )}
         </div>
 
-        <div style={{ marginBottom: "10px" }}>
+        {/* DESTINATION */}
+        <div
+          style={{
+            marginBottom: "10px"
+          }}
+        >
           <label
             style={{
               display: "block",
@@ -432,8 +613,9 @@ if (selectedDestination) {
             type="text"
             value={destination}
             onChange={(e) =>
-              handleDestinationChange(e.target.value)
-
+              handleDestinationChange(
+                e.target.value
+              )
             }
             placeholder="Enter destination"
             style={{
@@ -444,47 +626,63 @@ if (selectedDestination) {
               borderRadius: "5px"
             }}
           />
-          {destinationSuggestions.length > 0 && (
-  <div
-    style={{
-      border: "1px solid #ddd",
-      borderRadius: "5px",
-      marginTop: "5px",
-      background: "white"
-    }}
-  >
-    {destinationSuggestions.map((suggestion, index) => (
-      <div
-        key={index}
-        onClick={() => {
-          setDestination(suggestion.name);
-          setSelectedDestination(suggestion);
-          setDestinationSuggestions([]);
-        }}
-        style={{
-          padding: "8px",
-          cursor: "pointer",
-          borderBottom: "1px solid #eee"
-        }}
-      >
-        <strong>{suggestion.name}</strong>
 
-        {suggestion.address && (
-          <div
-            style={{
-              fontSize: "12px",
-              color: "#666"
-            }}
-          >
-            {suggestion.address}
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-)}
+          {destinationSuggestions.length >
+            0 && (
+            <div
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: "5px",
+                marginTop: "5px",
+                background: "white"
+              }}
+            >
+              {destinationSuggestions.map(
+                (suggestion, index) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      setDestination(
+                        suggestion.name
+                      );
+
+                      setSelectedDestination(
+                        suggestion
+                      );
+
+                      setDestinationSuggestions(
+                        []
+                      );
+                    }}
+                    style={{
+                      padding: "8px",
+                      cursor: "pointer",
+                      borderBottom:
+                        "1px solid #eee"
+                    }}
+                  >
+                    <strong>
+                      {suggestion.name}
+                    </strong>
+
+                    {suggestion.address && (
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#666"
+                        }}
+                      >
+                        {suggestion.address}
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+          )}
         </div>
 
+        {/* FIND ROUTES BUTTON */}
         <button
           onClick={findRoutes}
           disabled={loading}
@@ -503,50 +701,73 @@ if (selectedDestination) {
             ? "Finding Routes..."
             : "Find Routes"}
         </button>
+
+        {/* ROUTE CARDS */}
         {routes.length > 0 && (
-  <div style={{ marginTop: "15px" }}>
-    {routes.map((route, index) => (
-      <div
-        key={route.id}
-        style={{
-          padding: "10px",
-          marginBottom: "8px",
-          border: "1px solid #ddd",
-          borderRadius: "6px"
-        }}
-      >
-        <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    marginBottom: "5px"
-  }}
->
-  <div
-    style={{
-      width: "14px",
-      height: "14px",
-      borderRadius: "50%",
-      backgroundColor:
-        ["#22c55e", "#eab308", "#ef4444"][index]
-    }}
-  />
+          <div
+            style={{
+              marginTop: "15px"
+            }}
+          >
+            {routes.map(
+              (route, index) => (
+                <div
+                  key={route.id}
+                  style={{
+                    padding: "10px",
+                    marginBottom: "8px",
+                    border:
+                      "1px solid #ddd",
+                    borderRadius: "6px"
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "5px"
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "14px",
+                        height: "14px",
+                        borderRadius: "50%",
+                        backgroundColor:
+                          [
+                            "#22c55e",
+                            "#eab308",
+                            "#ef4444"
+                          ][index]
+                      }}
+                    />
 
-  <strong>Route {index + 1}</strong>
-</div>
+                    <strong>
+                      Route {index + 1}
+                    </strong>
+                  </div>
 
-<div>
-  Distance: {(route.distance / 1000).toFixed(2)} km
-</div>
+                  <div>
+                    Distance:{" "}
+                    {(
+                      route.distance / 1000
+                    ).toFixed(2)}{" "}
+                    km
+                  </div>
 
-<div>
-  Time: {Math.round(route.duration / 60)} min
-</div>
-      </div>
-    ))}
-  </div>
-)}
+                  <div>
+                    Time:{" "}
+                    {Math.round(
+                      route.duration / 60
+                    )}{" "}
+                    min
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        )}
       </div>
 
       {/* MAP */}
