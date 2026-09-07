@@ -7,13 +7,21 @@ import {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { fetchRoutes } from "../services/routes";
-import { geocodeLocation } from "../services/geocoding";
+import {
+  geocodeLocation,
+  geocodeSuggestions
+} from "../services/geocoding";
 
 const INITIAL_CENTER = [79.1550, 12.9692];
 
 function Map() {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const [startSuggestions, setStartSuggestions] = useState([]);
+const [destinationSuggestions, setDestinationSuggestions] = useState([]);
+
+const [selectedStart, setSelectedStart] = useState(null);
+const [selectedDestination, setSelectedDestination] = useState(null);
   const startMarker = useRef(null);
   const destinationMarker = useRef(null);
 
@@ -28,7 +36,7 @@ function Map() {
 
     const mapInstance = new MapLibreMap({
       container: mapContainer.current,
-      style: "https://demotiles.maplibre.org/style.json",
+      style: "https://tiles.openfreemap.org/styles/bright",
       center: INITIAL_CENTER,
       zoom: 14
     });
@@ -45,6 +53,41 @@ function Map() {
       map.current = null;
     };
   }, []);
+async function handleStartChange(value) {
+  setStart(value);
+  setSelectedStart(null);
+
+  if (!value.trim()) {
+    setStartSuggestions([]);
+    return;
+  }
+
+  try {
+    const results = await geocodeSuggestions(value);
+    setStartSuggestions(results);
+  } catch (error) {
+    console.error("Start suggestions error:", error);
+    setStartSuggestions([]);
+  }
+}
+
+async function handleDestinationChange(value) {
+  setDestination(value);
+  setSelectedDestination(null);
+
+  if (!value.trim()) {
+    setDestinationSuggestions([]);
+    return;
+  }
+
+  try {
+    const results = await geocodeSuggestions(value);
+    setDestinationSuggestions(results);
+  } catch (error) {
+    console.error("Destination suggestions error:", error);
+    setDestinationSuggestions([]);
+  }
+}
 
   async function findRoutes() {
     if (!start.trim() || !destination.trim()) {
@@ -55,26 +98,27 @@ function Map() {
     setLoading(true);
 
     try {
-      // 1. GEOCODE START LOCATION
-      const startLocation = await geocodeLocation(start);
+      // 1. GET START COORDINATES
+let startCoordinates;
 
-      console.log("START LOCATION:", startLocation);
+if (selectedStart) {
+  startCoordinates = selectedStart.coordinates;
+} else {
+  const startLocation = await geocodeLocation(start);
+  startCoordinates = startLocation.coordinates;
+}
 
-      // 2. GEOCODE DESTINATION
-      const destinationLocation =
-        await geocodeLocation(destination);
+// 2. GET DESTINATION COORDINATES
+let endCoordinates;
 
-      console.log(
-        "DESTINATION LOCATION:",
-        destinationLocation
-      );
+if (selectedDestination) {
+  endCoordinates = selectedDestination.coordinates;
+} else {
+  const destinationLocation =
+    await geocodeLocation(destination);
 
-      // 3. GET COORDINATES
-      const startCoordinates =
-        startLocation.coordinates;
-
-      const endCoordinates =
-        destinationLocation.coordinates;
+  endCoordinates = destinationLocation.coordinates;
+}
 
       console.log(
         "START COORDINATES:",
@@ -321,7 +365,7 @@ function Map() {
             type="text"
             value={start}
             onChange={(e) =>
-              setStart(e.target.value)
+               handleStartChange(e.target.value)
             }
             placeholder="Enter starting location"
             style={{
@@ -332,6 +376,45 @@ function Map() {
               borderRadius: "5px"
             }}
           />
+          {startSuggestions.length > 0 && (
+  <div
+    style={{
+      border: "1px solid #ddd",
+      borderRadius: "5px",
+      marginTop: "5px",
+      background: "white"
+    }}
+  >
+    {startSuggestions.map((suggestion, index) => (
+      <div
+        key={index}
+        onClick={() => {
+          setStart(suggestion.name);
+          setSelectedStart(suggestion);
+          setStartSuggestions([]);
+        }}
+        style={{
+          padding: "8px",
+          cursor: "pointer",
+          borderBottom: "1px solid #eee"
+        }}
+      >
+        <strong>{suggestion.name}</strong>
+
+        {suggestion.address && (
+          <div
+            style={{
+              fontSize: "12px",
+              color: "#666"
+            }}
+          >
+            {suggestion.address}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+)}
         </div>
 
         <div style={{ marginBottom: "10px" }}>
@@ -349,7 +432,8 @@ function Map() {
             type="text"
             value={destination}
             onChange={(e) =>
-              setDestination(e.target.value)
+              handleDestinationChange(e.target.value)
+
             }
             placeholder="Enter destination"
             style={{
@@ -360,6 +444,45 @@ function Map() {
               borderRadius: "5px"
             }}
           />
+          {destinationSuggestions.length > 0 && (
+  <div
+    style={{
+      border: "1px solid #ddd",
+      borderRadius: "5px",
+      marginTop: "5px",
+      background: "white"
+    }}
+  >
+    {destinationSuggestions.map((suggestion, index) => (
+      <div
+        key={index}
+        onClick={() => {
+          setDestination(suggestion.name);
+          setSelectedDestination(suggestion);
+          setDestinationSuggestions([]);
+        }}
+        style={{
+          padding: "8px",
+          cursor: "pointer",
+          borderBottom: "1px solid #eee"
+        }}
+      >
+        <strong>{suggestion.name}</strong>
+
+        {suggestion.address && (
+          <div
+            style={{
+              fontSize: "12px",
+              color: "#666"
+            }}
+          >
+            {suggestion.address}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+)}
         </div>
 
         <button
