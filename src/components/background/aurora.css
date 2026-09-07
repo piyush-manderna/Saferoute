@@ -1,0 +1,234 @@
+/* ======================================== */
+/* Base Aurora */
+/* ======================================== */
+
+.aurora{
+    position:absolute;
+    border-radius:9999px;
+    filter:blur(190px);
+    opacity:.45;
+    mix-blend-mode:screen;
+    animation:auroraFloat 20s ease-in-out infinite;
+    will-change:transform;
+}
+
+/* ======================================== */
+/* Left Aurora */
+/* ======================================== */
+
+.aurora-one{
+
+    width:760px;
+    height:760px;
+
+    left:-260px;
+    top:-220px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(20,241,149,.18) 0%,
+            rgba(20,241,149,.08) 42%,
+            transparent 76%
+        );
+}
+
+/* ======================================== */
+/* Right Aurora */
+/* ======================================== */
+
+.aurora-two{
+
+    width:760px;
+    height:760px;
+
+    right:-280px;
+    top:-160px;
+
+    animation-delay:-8s;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(79,140,255,.10) 0%,
+            rgba(79,140,255,.04) 42%,
+            transparent 78%
+        );
+}
+
+/* ======================================== */
+/* Bottom Aurora */
+/* ======================================== */
+
+.aurora-three{
+
+    width:900px;
+    height:900px;
+
+    left:25%;
+    bottom:-620px;
+
+    animation-delay:-13s;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(20,241,149,.08),
+            transparent 76%
+        );
+}
+
+/* ======================================== */
+/* Center Ambient */
+/* ======================================== */
+
+.aurora-center{
+
+    position:absolute;
+
+    left:50%;
+    top:48%;
+
+    transform:translate(-50%,-50%);
+
+    width:560px;
+    height:560px;
+
+    border-radius:50%;
+
+    filter:blur(170px);
+
+    opacity:.05;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,255,255,.18),
+            transparent 72%
+        );
+}
+
+/* ======================================== */
+/* Top Ambient */
+/* ======================================== */
+
+.aurora-top{
+
+    position:absolute;
+
+    left:50%;
+    top:-280px;
+
+    transform:translateX(-50%);
+
+    width:1200px;
+    height:700px;
+
+    filter:blur(220px);
+
+    opacity:.05;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(79,140,255,.30),
+            transparent 72%
+        );
+}
+
+/* ======================================== */
+/* Middle Ambient */
+/* ======================================== */
+
+.aurora-middle{
+
+    position:absolute;
+
+    left:50%;
+    top:52%;
+
+    transform:translate(-50%,-50%);
+
+    width:760px;
+    height:760px;
+
+    border-radius:50%;
+
+    filter:blur(200px);
+
+    opacity:.05;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(20,241,149,.12),
+            rgba(79,140,255,.05),
+            transparent 74%
+        );
+}
+
+/* ======================================== */
+/* Bottom Ambient */
+/* ======================================== */
+
+.aurora-bottom{
+
+    position:absolute;
+
+    left:50%;
+    bottom:-420px;
+
+    transform:translateX(-50%);
+
+    width:1300px;
+    height:850px;
+
+    filter:blur(240px);
+
+    opacity:.04;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(20,241,149,.15),
+            transparent 75%
+        );
+}
+
+/* ======================================== */
+/* Animation */
+/* ======================================== */
+
+@keyframes auroraFloat{
+
+    0%{
+        transform:
+            translate3d(0,0,0)
+            scale(1);
+    }
+
+    25%{
+        transform:
+            translate3d(40px,-30px,0)
+            scale(1.05);
+    }
+
+    50%{
+        transform:
+            translate3d(-35px,30px,0)
+            scale(.96);
+    }
+
+    75%{
+        transform:
+            translate3d(35px,25px,0)
+            scale(1.04);
+    }
+
+    100%{
+        transform:
+            translate3d(0,0,0)
+            scale(1);
+    }
+
+}

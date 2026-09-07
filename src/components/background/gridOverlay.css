@@ -1,0 +1,169 @@
+/* ===================================== */
+/* Main Container */
+/* ===================================== */
+
+.grid-overlay{
+
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+
+}
+
+/* ===================================== */
+/* Perspective Grid */
+/* ===================================== */
+
+.grid-perspective{
+
+    position:absolute;
+
+    left:-20%;
+    right:-20%;
+    bottom:-15%;
+
+    width:140%;
+    height:120%;
+
+    transform:
+
+        perspective(900px)
+
+        rotateX(74deg)
+
+        translateY(0);
+
+    transform-origin:center bottom;
+
+    background-image:
+
+        linear-gradient(
+
+            rgba(79,140,255,.07) 1px,
+
+            transparent 1px
+
+        ),
+
+        linear-gradient(
+
+            90deg,
+
+            rgba(79,140,255,.07) 1px,
+
+            transparent 1px
+
+        );
+
+    background-size:
+
+        70px 70px;
+
+    animation:
+
+        gridMove 18s linear infinite;
+
+    mask-image:
+
+        linear-gradient(
+
+            to top,
+
+            rgba(255,255,255,1),
+
+            rgba(255,255,255,.85),
+
+            rgba(255,255,255,.2),
+
+            transparent
+
+        );
+
+    opacity:.55;
+
+}
+
+/* ===================================== */
+/* Center Glow */
+/* ===================================== */
+
+.grid-highlight{
+
+    position:absolute;
+
+    left:50%;
+    bottom:18%;
+
+    transform:translateX(-50%);
+
+    width:900px;
+    height:500px;
+
+    border-radius:50%;
+
+    background:
+
+        radial-gradient(
+
+            circle,
+
+            rgba(79,140,255,.10),
+
+            transparent 72%
+
+        );
+
+    filter:blur(70px);
+
+}
+
+/* ===================================== */
+/* Vignette */
+/* ===================================== */
+
+.grid-vignette{
+
+    position:absolute;
+    inset:0;
+
+    background:
+
+        radial-gradient(
+
+            ellipse at center,
+
+            transparent 55%,
+
+            rgba(5,8,22,.22)
+
+        );
+
+}
+
+/* ===================================== */
+/* Animation */
+/* ===================================== */
+
+@keyframes gridMove{
+
+    from{
+
+        background-position:
+
+            0 0,
+
+            0 0;
+
+    }
+
+    to{
+
+        background-position:
+
+            0 70px,
+
+            70px 0;
+
+    }
+
+}

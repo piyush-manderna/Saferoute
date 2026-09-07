@@ -1,0 +1,735 @@
+@import "tailwindcss";
+
+/* =========================================================
+   ROOT & BASE RESETS
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+:root{
+
+    --bg-main:#040507;
+    --bg-secondary:#090B10;
+    --bg-card:#0E131A;
+
+    --primary:#14F195;
+    --secondary:#7DD3FC;
+    --danger:#FF4D6D;
+
+    --text:#F8FAFC;
+    --muted:#94A3B8;
+
+}
+
+*{
+    box-sizing:border-box;
+}
+
+html,
+body,
+:root{
+
+    --bg-main:#040507;
+    --bg-secondary:#090B10;
+    --bg-card:#0E131A;
+
+    --primary:#14F195;
+    --secondary:#7DD3FC;
+    --danger:#FF4D6D;
+
+    --text:#F8FAFC;
+    --muted:#94A3B8;
+
+}
+
+*{
+    box-sizing:border-box;
+}
+
+html,
+body,
+#root{
+
+    margin:0;
+    padding:0;
+
+    min-height:100%;
+
+    overflow-x:hidden;
+
+    background:var(--bg-main);
+
+    color:var(--text);
+
+    font-family:
+        "Plus Jakarta Sans",
+        Inter,
+        system-ui,
+        sans-serif;
+
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+
+    scroll-behavior:smooth;
+
+}
+
+body{
+
+    background:
+
+    radial-gradient(
+        circle at 18% 22%,
+        rgba(20,241,149,.05),
+        transparent 28%
+    ),
+
+    radial-gradient(
+        circle at 82% 18%,
+        rgba(125,211,252,.04),
+        transparent 30%
+    ),
+
+    radial-gradient(
+        circle at 50% 82%,
+        rgba(255,255,255,.02),
+        transparent 38%
+    ),
+
+    linear-gradient(
+        180deg,
+        #040507 0%,
+        #05070A 45%,
+        #040507 100%
+    );
+
+    background-attachment:fixed;
+
+}
+
+/* =========================================================
+   NOISE OVERLAY
+========================================================= */
+
+.bg-noise{
+
+    background-image:
+
+    radial-gradient(
+
+        rgba(255,255,255,.02) 1px,
+
+        transparent 0
+
+    );
+
+    background-size:26px 26px;
+
+}
+
+/* =========================================================
+   GLASSMORPHISM
+========================================================= */
+
+.glass{
+
+    background:rgba(14,19,26,.62);
+
+    backdrop-filter:blur(24px);
+    -webkit-backdrop-filter:blur(24px);
+
+    border:1px solid rgba(255,255,255,.05);
+
+    box-shadow:
+
+        inset 0 1px 0 rgba(255,255,255,.04),
+
+        0 20px 60px rgba(0,0,0,.45);
+
+}
+
+/* =========================================================
+   GLASS HOVER
+========================================================= */
+
+.glass-hover {
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.glass-hover:hover {
+  transform: translateY(-4px);
+  background: rgba(24, 35, 56, 0.78);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(20, 241, 149, 0.12);
+}
+
+/* =========================================================
+   CUSTOM SCROLLBAR
+========================================================= */
+::-webkit-scrollbar-track{
+
+    background:#040507;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#1B2432;
+
+    border-radius:999px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#2D3748;
+
+}
+
+/* =========================================================
+   TEXT SELECTION & FOCUS
+========================================================= */
+
+::selection {
+  background: #14F195;
+  color: #050816;
+}
+
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(20, 241, 149, 0.35);
+}
+
+/* =========================================================
+   UNIVERSAL INTERACTION TRANSITIONS
+========================================================= */
+
+button,
+input,
+textarea,
+a,
+.card {
+  transition:
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    color 0.25s ease;
+}
+
+/* =========================================================
+   ANIMATIONS: FLOAT & GLOW
+========================================================= */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.05);
+  }
+}
+
+.animate-glow {
+  animation: glow 5s ease-in-out infinite;
+}
+
+/* =========================================================
+   ANIMATIONS: SHINE & PULSE RING
+========================================================= */
+
+@keyframes shine {
+  from {
+    transform: translateX(-140%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+
+.animate-shine {
+  animation: shine 2.8s linear infinite;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.65;
+  }
+  70% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulseRing 2.5s infinite;
+}
+
+/* =========================================================
+   ANIMATIONS: FADE UP (SINGLE DEFINITION - SUPPORTS BOTH FORMATS)
+========================================================= */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up,
+.animate-fadeUp {
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* =========================================================
+   ANIMATIONS: AURORA MESH
+========================================================= */
+
+@keyframes aurora1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(80px, 50px, 0) scale(1.15);
+  }
+}
+
+@keyframes aurora2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-90px, 70px, 0) scale(1.1);
+  }
+}
+
+@keyframes aurora3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(50px, -70px, 0) scale(1.18);
+  }
+}
+
+.animate-aurora-1 {
+  animation: aurora1 18s ease-in-out infinite;
+}
+
+.animate-aurora-2 {
+  animation: aurora2 22s ease-in-out infinite;
+}
+
+.animate-aurora-3 {
+  animation: aurora3 20s ease-in-out infinite;
+}
+
+/* =========================================================
+   ANIMATIONS: FLOATING LIGHTS
+========================================================= */
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25px);
+  }
+}
+
+@keyframes floatMedium {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes floatFast {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: floatMedium 6s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: floatFast 4s ease-in-out infinite;
+}
+
+/* =========================================================
+   ANIMATIONS: LIGHT BEAM
+========================================================= */
+
+@keyframes lightBeam {
+  0% {
+    transform: translateX(-120%) rotate(12deg);
+  }
+  100% {
+    transform: translateX(320%) rotate(12deg);
+  }
+}
+
+.animate-light-beam {
+  animation: lightBeam 16s linear infinite;
+}
+
+/* =========================================================
+   RADAR PULSE
+========================================================= */
+
+.radar-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  border: 1px solid rgba(20, 241, 149, 0.18);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.radar-ring-1 {
+  animation: radar 4s linear infinite;
+}
+
+.radar-ring-2 {
+  animation: radar 4s linear infinite 1.2s;
+}
+
+.radar-ring-3 {
+  animation: radar 4s linear infinite 2.4s;
+}
+
+@keyframes radar {
+  0% {
+    width: 40px;
+    height: 40px;
+    opacity: 0.55;
+  }
+  100% {
+    width: 240px;
+    height: 240px;
+    opacity: 0;
+  }
+}
+
+/* =========================================================
+   SMOOTH GPU RENDERING & USER SELECTION PRESERVATION
+========================================================= */
+
+canvas {
+  display: block;
+}
+
+img,
+video,
+canvas {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ========================================= */
+/* Floating Particles */
+/* ========================================= */
+
+.particle{
+
+position:absolute;
+
+border-radius:9999px;
+
+filter:blur(.5px);
+
+box-shadow:
+0 0 10px currentColor,
+0 0 20px currentColor,
+0 0 35px currentColor;
+
+will-change:transform;
+
+animation:particleFloat linear infinite;
+
+}
+
+@keyframes particleFloat{
+
+0%{
+
+transform:
+translate3d(0,0,0)
+scale(1);
+
+}
+
+25%{
+
+transform:
+translate3d(18px,-18px,0)
+scale(1.05);
+
+}
+
+50%{
+
+transform:
+translate3d(-12px,-55px,0)
+scale(.95);
+
+}
+
+75%{
+
+transform:
+translate3d(16px,-95px,0)
+scale(1.08);
+
+}
+
+100%{
+
+transform:
+translate3d(0,-150px,0)
+scale(1);
+
+}
+
+}
+
+.particle{
+    position:absolute;
+    border-radius:9999px;
+    filter:blur(1px);
+
+    animation:particleFloat linear infinite;
+}
+
+@keyframes particleFloat{
+
+0%{
+transform:translateY(0px);
+opacity:.15;
+}
+
+50%{
+opacity:.45;
+}
+
+100%{
+transform:translateY(-120px);
+opacity:0;
+}
+
+}
+
+@keyframes lightBeam{
+
+0%{
+transform:translateY(-60px);
+opacity:.18;
+}
+
+50%{
+opacity:.28;
+}
+
+100%{
+transform:translateY(60px);
+opacity:.18;
+}
+
+}
+
+.animate-light-beam{
+
+animation:lightBeam 18s ease-in-out infinite;
+
+}
+
+/* ============================= */
+/* Route Drawing */
+/* ============================= */
+
+.route-line{
+
+stroke-dasharray:500;
+
+stroke-dashoffset:500;
+
+animation:drawRoute 5s ease-in-out infinite;
+
+}
+
+@keyframes drawRoute{
+
+0%{
+
+stroke-dashoffset:500;
+
+}
+
+35%{
+
+stroke-dashoffset:0;
+
+}
+
+80%{
+
+stroke-dashoffset:0;
+
+}
+
+100%{
+
+stroke-dashoffset:-500;
+
+}
+
+}
+
+/* ============================= */
+/* Moving Navigation */
+/* ============================= */
+
+.route-dot{
+
+position:absolute;
+
+width:14px;
+
+height:14px;
+
+border-radius:999px;
+
+background:#18F7A9;
+
+box-shadow:
+
+0 0 8px #18F7A9,
+
+0 0 22px #18F7A9;
+
+animation:moveRoute 5s linear infinite;
+
+}
+
+@keyframes moveRoute{
+
+0%{
+
+left:35px;
+
+top:170px;
+
+}
+
+20%{
+
+left:90px;
+
+top:135px;
+
+}
+
+40%{
+
+left:150px;
+
+top:140px;
+
+}
+
+60%{
+
+left:205px;
+
+top:95px;
+
+}
+
+80%{
+
+left:275px;
+
+top:90px;
+
+}
+
+100%{
+
+left:325px;
+
+top:40px;
+
+}
+
+}
+
+@keyframes miniMapFloat {
+
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+
+}
+
+.animate-mini-map {
+  animation: miniMapFloat 5s ease-in-out infinite;
+}
+
+.animate-mini-map:hover {
+  animation-play-state: paused;
+}
