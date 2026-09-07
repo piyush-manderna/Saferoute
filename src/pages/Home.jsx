@@ -1,9 +1,9 @@
-
-
 import { useState } from "react";
 import ReportModal from "../components/ReportModal";
 import SafeZoneCard from "../components/SafeZoneCard";
 
+// TODO [Member 3]: Replace this mock array with a real call to getSafeZones()
+// from "../services/firestore" once it's ready.
 const MOCK_SAFE_ZONES = [
   { id: 1, name: "Katpadi Police Station", type: "police", distance: "0.8 km" },
   { id: 2, name: "CSI Hospital", type: "hospital", distance: "1.2 km" },
@@ -13,14 +13,33 @@ const MOCK_SAFE_ZONES = [
   { id: 6, name: "Global Hospital", type: "hospital", distance: "2.0 km" },
 ];
 
+// Maps snake_case category values (matching Firestore schema) to friendly display labels
+const CATEGORY_LABELS = {
+  poor_lighting: "Poor lighting",
+  harassment: "Harassment",
+  broken_cctv: "Broken CCTV",
+  isolated_road: "Isolated road",
+  other: "Other",
+};
+// NOTE [Member 1]: This whole Home.jsx is a TEMPORARY test page for Member 5's
+// components (Report + Safe Zones). Once Member 1's real Home.jsx (dark theme,
+// map on right, sidebar with route cards) is ready, move only the JSX blocks
+// marked below into their layout. This file itself gets discarded.
+
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [reports, setReports] = useState([]);
 
-  
+  // TODO [Member 3]: Replace this stub with real Firestore calls:
+  // import { submitReport, getReports } from "../services/firestore";
+  // const handleReportSubmit = async (data) => {
+  //   await submitReport(data);
+  //   const updated = await getReports();
+  //   setReports(updated);
+  // };
   const handleReportSubmit = async (data) => {
     console.log("New report submitted:", data);
-    setReports((prev) => [...prev, data]);
+    setReports((prev) => [...prev, { ...data, createdAt: new Date().toISOString() }]);
   };
 
   return (
@@ -51,14 +70,28 @@ export default function Home() {
       {reports.length > 0 ? (
         <div className="space-y-2">
           {reports.map((r, i) => (
-            <div key={i} className="bg-white border border-gray-200 rounded-lg p-3 text-sm">
-              <span className="font-medium text-red-600">{r.category}</span> — {r.description}
+            <div
+              key={i}
+              className="bg-white border border-gray-200 rounded-lg p-3 text-sm flex items-center justify-between"
+            >
+              <div>
+                <span className="font-medium text-red-600">
+                {r.category === "other" && r.customCategory
+                  ? r.customCategory
+                : CATEGORY_LABELS[r.category] || r.category}
+                </span>{" "}
+                — {r.description}
+              </div>
+              <span className="text-xs text-gray-400 whitespace-nowrap ml-4">
+                {new Date(r.createdAt).toLocaleDateString()}{" "}
+                {new Date(r.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
             </div>
           ))}
         </div>
-) : (
-  <p className="text-sm text-gray-400 italic">No reports yet. Be the first to report an issue.</p>
-)}
+      ) : (
+        <p className="text-sm text-gray-400 italic">No reports yet. Be the first to report an issue.</p>
+      )}
 
       {/* === MOVE INTO MEMBER 1's LAYOUT: Report modal (always render, controlled by state) === */}
       <ReportModal

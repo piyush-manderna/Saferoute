@@ -1,14 +1,16 @@
 import { useState } from "react";
 
 const CATEGORIES = [
-  "Poor lighting",
-  "Harassment",
-  "Broken CCTV",
-  "Isolated road",
+  { label: "Poor lighting", value: "poor_lighting" },
+  { label: "Harassment", value: "harassment" },
+  { label: "Broken CCTV", value: "broken_cctv" },
+  { label: "Isolated road", value: "isolated_road" },
+  { label: "Other", value: "other" },
 ];
 
 export default function ReportModal({ isOpen, onClose, onSubmit }) {
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [category, setCategory] = useState(CATEGORIES[0].value);
+  const [customCategory, setCustomCategory] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -22,16 +24,24 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
       setError("Please add a short description.");
       return;
     }
+    if (category === "other" && !customCategory.trim()) {
+      setError("Please specify the issue type.");
+      return;
+    }
     setError("");
     setSubmitting(true);
     try {
       await onSubmit({
         category,
+        customCategory: category === "other" ? customCategory.trim() : null,
         description,
-        createdAt: new Date().toISOString(),
+        location: null,  // TODO: needs real [lat, lng] once map/geolocation is ready
+        status: "pending",
+        // reporterID + timestamp: handled by Member 3 on the backend (Firestore serverTimestamp + anon auth uid)
       });
       setDescription("");
-      setCategory(CATEGORIES[0]);
+      setCategory(CATEGORIES[0].value);
+      setCustomCategory("");
       onClose();
     } catch (err) {
       console.error("Failed to submit report:", err);
@@ -52,15 +62,36 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
           </label>
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              if (error) setError("");
+            }}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
           >
             {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+              <option key={cat.value} value={cat.value}>
+                {cat.label}
               </option>
             ))}
           </select>
+
+          {category === "other" && (
+            <>
+              <label className="block text-sm font-medium text-gray-700 mt-4 mb-1">
+                Specify issue
+              </label>
+              <input
+                type="text"
+                value={customCategory}
+                onChange={(e) => {
+                  setCustomCategory(e.target.value);
+                  if (error) setError("");
+                }}
+                placeholder="e.g. Stray dogs, stalking..."
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+            </>
+          )}
 
           <label className="block text-sm font-medium text-gray-700 mt-4 mb-1">
             Description
