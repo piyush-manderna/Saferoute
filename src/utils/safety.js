@@ -1,5 +1,5 @@
 // ============================================
-// SAFEROUTE - SAFETY SCORING ENGINE
+// SAFEROUTE - 6 FACTOR SAFETY SCORING ENGINE
 // Member 4
 // ============================================
 
@@ -15,7 +15,12 @@ function clamp(value, min = 0, max = 1) {
 
 // Calculate distance between two coordinates
 // Returns distance in kilometers.
-function haversineDistance(lat1, lon1, lat2, lon2) {
+function haversineDistance(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
 
     const R = 6371;
 
@@ -92,18 +97,13 @@ function getCategoryRisk(category) {
     const categoryRisk = {
 
         suspicious_activity: 0.60,
-
         theft: 0.70,
-
         harassment: 0.80,
-
         assault: 0.90,
-
         violent_incident: 1.00,
-
         accident: 0.60,
-
         vandalism: 0.50
+
     };
 
     return categoryRisk[category] ?? 0.60;
@@ -130,7 +130,6 @@ export function calculateIncidentSafety(
             continue;
         }
 
-        // Firebase GeoPoint
         const latitude =
             report.location.latitude;
 
@@ -151,8 +150,7 @@ export function calculateIncidentSafety(
                 longitude
             );
 
-        // Only reports within 500 metres
-        // affect this route.
+        // Reports within 500 metres affect route
         if (distance > 0.5) {
             continue;
         }
@@ -170,7 +168,7 @@ export function calculateIncidentSafety(
         const recencyScore =
             calculateReportRecency(report);
 
-        // Recent report = higher risk.
+        // Recent report = higher risk
         const recencyRisk =
             1 - recencyScore;
 
@@ -189,23 +187,7 @@ export function calculateIncidentSafety(
 
 
 // ============================================
-// 2. LIGHTING SCORE
-// ============================================
-
-export function calculateLightingScore(
-    lighting = 1
-) {
-
-    return clamp(
-        typeof lighting === "number"
-            ? lighting
-            : 1
-    );
-}
-
-
-// ============================================
-// 3. SAFE ZONE SCORE
+// 2. SAFE ZONE SCORE
 // ============================================
 
 export function calculateSafeZoneScore(
@@ -275,53 +257,24 @@ export function calculateSafeZoneScore(
 
 
 // ============================================
-// 4. CCTV SCORE
-// ============================================
-
-export function calculateCCTVScore(
-    cctv = 1
-) {
-
-    return clamp(
-        typeof cctv === "number"
-            ? cctv
-            : 1
-    );
-}
-
-
-// ============================================
-// 5. ACCESSIBILITY SCORE
-// ============================================
-
-export function calculateAccessibilityScore(
-    accessibility = 1
-) {
-
-    return clamp(
-        typeof accessibility === "number"
-            ? accessibility
-            : 1
-    );
-}
-
-
-// ============================================
-// 6. TIME SAFETY
+// 3. TIME SAFETY
 // ============================================
 
 export function calculateTimeSafety(
     hour = new Date().getHours()
 ) {
 
+    // Day
     if (hour >= 6 && hour < 18) {
         return 1.0;
     }
 
+    // Evening
     if (hour >= 18 && hour < 21) {
         return 0.8;
     }
 
+    // Night
     if (hour >= 21 || hour < 5) {
         return 0.4;
     }
@@ -331,52 +284,7 @@ export function calculateTimeSafety(
 
 
 // ============================================
-// 7. ROAD SAFETY
-// ============================================
-
-export function calculateRoadSafety(
-    roadType = 1
-) {
-
-    if (typeof roadType === "number") {
-        return clamp(roadType);
-    }
-
-    const road =
-        String(roadType).toLowerCase();
-
-    if (
-        road.includes("main") ||
-        road.includes("highway") ||
-        road.includes("major")
-    ) {
-        return 1.0;
-    }
-
-    if (road.includes("residential")) {
-        return 0.8;
-    }
-
-    if (
-        road.includes("small") ||
-        road.includes("minor")
-    ) {
-        return 0.6;
-    }
-
-    if (
-        road.includes("narrow") ||
-        road.includes("isolated")
-    ) {
-        return 0.3;
-    }
-
-    return 0.6;
-}
-
-
-// ============================================
-// 8. EMERGENCY PROXIMITY
+// 4. EMERGENCY PROXIMITY
 // ============================================
 
 export function calculateEmergencyProximity(
@@ -465,7 +373,7 @@ export function calculateEmergencyProximity(
 
 
 // ============================================
-// 9. REPORT RECENCY
+// 5. REPORT RECENCY
 // ============================================
 
 export function calculateReportRecency(
@@ -546,10 +454,11 @@ export function calculateReportRecency(
 
 
 // ============================================
-// 10. DISTANCE SAFETY
+// 6. DISTANCE SAFETY
 // ============================================
 
 // OSRM distance is in metres.
+
 export function calculateDistanceSafety(
     distanceMeters
 ) {
@@ -585,30 +494,23 @@ export function calculateDistanceSafety(
 
 
 // ============================================
-// WEIGHTS
+// 6-FACTOR WEIGHTS
 // ============================================
 
 const WEIGHTS = {
 
-    incidentSafety: 0.20,
+    incidentSafety: 0.35,
 
-    lighting: 0.15,
+    safeZones: 0.20,
 
-    safeZones: 0.12,
+    timeSafety: 0.15,
 
-    cctv: 0.10,
+    emergencyProximity: 0.12,
 
-    accessibility: 0.10,
+    reportRecency: 0.10,
 
-    timeSafety: 0.08,
+    distanceSafety: 0.08
 
-    roadSafety: 0.08,
-
-    emergencyProximity: 0.07,
-
-    reportRecency: 0.05,
-
-    distanceSafety: 0.05
 };
 
 
@@ -625,23 +527,11 @@ export function calculateWeightedScore(
         features.incidentSafety *
         WEIGHTS.incidentSafety +
 
-        features.lighting *
-        WEIGHTS.lighting +
-
         features.safeZones *
         WEIGHTS.safeZones +
 
-        features.cctv *
-        WEIGHTS.cctv +
-
-        features.accessibility *
-        WEIGHTS.accessibility +
-
         features.timeSafety *
         WEIGHTS.timeSafety +
-
-        features.roadSafety *
-        WEIGHTS.roadSafety +
 
         features.emergencyProximity *
         WEIGHTS.emergencyProximity +
@@ -697,7 +587,7 @@ export function calculateSafetyScore(
     return routes.map(route => {
 
         // -----------------------------
-        // Firebase-based factors
+        // Incident Safety
         // -----------------------------
 
         const incidentSafety =
@@ -706,11 +596,29 @@ export function calculateSafetyScore(
                 reports
             );
 
+
+        // -----------------------------
+        // Safe Zones
+        // -----------------------------
+
         const safeZonesScore =
             calculateSafeZoneScore(
                 route,
                 safeZones
             );
+
+
+        // -----------------------------
+        // Time Safety
+        // -----------------------------
+
+        const timeSafety =
+            calculateTimeSafety();
+
+
+        // -----------------------------
+        // Emergency Proximity
+        // -----------------------------
 
         const emergencyProximity =
             calculateEmergencyProximity(
@@ -720,50 +628,7 @@ export function calculateSafetyScore(
 
 
         // -----------------------------
-        // Route-based factors
-        // -----------------------------
-
-        const distanceSafety =
-            calculateDistanceSafety(
-                route.distance
-            );
-
-
-        // -----------------------------
-        // Time-based factor
-        // -----------------------------
-
-        const timeSafety =
-            calculateTimeSafety();
-
-
-        // -----------------------------
-        // Temporary/default factors
-        // -----------------------------
-
-        const lighting =
-            calculateLightingScore(
-                route.lighting ?? 1
-            );
-
-        const cctv =
-            calculateCCTVScore(
-                route.cctv ?? 1
-            );
-
-        const accessibility =
-            calculateAccessibilityScore(
-                route.accessibility ?? 1
-            );
-
-        const roadSafety =
-            calculateRoadSafety(
-                route.roadType ?? 1
-            );
-
-
-        // -----------------------------
-        // Reports near this route
+        // Reports near route
         // -----------------------------
 
         const nearbyReports =
@@ -800,7 +665,7 @@ export function calculateSafetyScore(
 
 
         // -----------------------------
-        // Report recency
+        // Report Recency
         // -----------------------------
 
         let reportRecency = 1.0;
@@ -825,36 +690,39 @@ export function calculateSafetyScore(
 
 
         // -----------------------------
-        // Feature vector
+        // Distance Safety
+        // -----------------------------
+
+        const distanceSafety =
+            calculateDistanceSafety(
+                route.distance
+            );
+
+
+        // -----------------------------
+        // FINAL 6 FEATURES
         // -----------------------------
 
         const features = {
 
             incidentSafety,
 
-            lighting,
-
             safeZones:
                 safeZonesScore,
 
-            cctv,
-
-            accessibility,
-
             timeSafety,
-
-            roadSafety,
 
             emergencyProximity,
 
             reportRecency,
 
             distanceSafety
+
         };
 
 
         // -----------------------------
-        // Final weighted score
+        // FINAL SCORE
         // -----------------------------
 
         const score =
@@ -873,7 +741,9 @@ export function calculateSafetyScore(
                 getSafetyLevel(score),
 
             features
+
         };
+
     });
 }
 
@@ -906,4 +776,5 @@ export function getWeights() {
     return {
         ...WEIGHTS
     };
+
 }

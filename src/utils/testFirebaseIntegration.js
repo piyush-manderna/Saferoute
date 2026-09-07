@@ -3,156 +3,231 @@
 // Member 2 + Member 3 + Member 4
 // ============================================
 
+
 import {
-  getReports,
-  getSafeZones
+    getReports,
+    getSafeZones
 } from "../services/firestore.js";
 
+
 import {
-  calculateSafetyScore,
-  rankRoutes
+    calculateSafetyScore,
+    rankRoutes
 } from "./safety.js";
 
+
 import {
-  fetchRoutes
+    fetchRoutes
 } from "../services/routes.js";
 
-// ============================================
-// TEST FUNCTION
-// ============================================
+
 
 async function testFullIntegration() {
 
-  try {
+    try {
 
-    console.log("================================");
-    console.log("SAFEROUTE FULL INTEGRATION TEST");
-    console.log("================================");
+        console.log("================================");
+        console.log("SAFEROUTE FULL INTEGRATION TEST");
+        console.log("================================");
 
-    // ============================================
-    // 1. GET ROUTES FROM MEMBER 2
-    // ============================================
 
-    console.log("\n1. Getting routes from Member 2...");
+        // ----------------------------------------
+        // 1. GET ROUTES
+        // ----------------------------------------
 
-    // [longitude, latitude]
-    const start = [79.1320, 12.9060];
-    const end = [79.1400, 12.9100];
+        console.log("\n1. Getting routes...");
 
-    const routes = await fetchRoutes(start, end);
+        const start = [79.1320, 12.9060];
 
-    console.log(`Routes received: ${routes.length}`);
-    console.log(routes);
+        const end = [79.1400, 12.9100];
 
-    // ============================================
-    // 2. GET REPORTS FROM MEMBER 3
-    // ============================================
+        const routes =
+            await fetchRoutes(
+                start,
+                end
+            );
 
-    console.log("\n2. Getting Firebase reports...");
+        console.log(
+            `Routes received: ${routes.length}`
+        );
 
-    const reports = await getReports();
+        console.log(routes);
 
-    console.log(`Reports received: ${reports.length}`);
-    console.log(reports);
 
-    // ============================================
-    // 3. GET SAFE ZONES FROM MEMBER 3
-    // ============================================
+        // ----------------------------------------
+        // 2. GET FIREBASE REPORTS
+        // ----------------------------------------
 
-    console.log("\n3. Getting Firebase safe zones...");
+        console.log(
+            "\n2. Getting Firebase reports..."
+        );
 
-    const safeZones = await getSafeZones();
+        const reports =
+            await getReports();
 
-    console.log(`Safe zones received: ${safeZones.length}`);
-    console.log(safeZones);
+        console.log(
+            `Reports received: ${reports.length}`
+        );
 
-    // ============================================
-    // 4. CALCULATE SAFETY SCORES
-    // ============================================
+        console.log(reports);
 
-    console.log("\n4. Calculating route safety...");
 
-    const scoredRoutes = calculateSafetyScore(
-      routes,
-      reports,
-      safeZones
-    );
+        // ----------------------------------------
+        // 3. GET FIREBASE SAFE ZONES
+        // ----------------------------------------
 
-    console.log("Scored routes:");
-    console.log(scoredRoutes);
+        console.log(
+            "\n3. Getting Firebase safe zones..."
+        );
 
-    // ============================================
-    // 5. RANK ROUTES
-    // ============================================
+        const safeZones =
+            await getSafeZones();
 
-    console.log("\n5. Ranking routes...");
+        console.log(
+            `Safe zones received: ${safeZones.length}`
+        );
 
-    const rankedRoutes = rankRoutes(scoredRoutes);
+        console.log(safeZones);
 
-    rankedRoutes.forEach((route, index) => {
 
-      console.log(
-        `${index + 1}. Route ${route.id} → ${route.score}/100 → ${route.safetyLevel}`
-      );
+        // ----------------------------------------
+        // 4. CALCULATE SAFETY SCORE
+        // ----------------------------------------
 
-    });
+        console.log(
+            "\n4. Calculating route safety..."
+        );
 
-    // ============================================
-    // 6. SAFEST ROUTE
-    // ============================================
+        const scoredRoutes =
+            calculateSafetyScore(
+                routes,
+                reports,
+                safeZones
+            );
 
-    console.log("\n6. Safest route:");
+        console.log(
+            "Scored routes:"
+        );
 
-    if (rankedRoutes.length > 0) {
+        console.log(scoredRoutes);
 
-      console.log(
-        `Route: ${rankedRoutes[0].id}`
-      );
 
-      console.log(
-        `Score: ${rankedRoutes[0].score}/100`
-      );
+        // ----------------------------------------
+        // 5. RANK ROUTES
+        // ----------------------------------------
 
-      console.log(
-        `Level: ${rankedRoutes[0].safetyLevel}`
-      );
+        console.log(
+            "\n5. Ranking routes..."
+        );
 
-      console.log(
-        "\nSafety factors:"
-      );
+        const rankedRoutes =
+            rankRoutes(
+                scoredRoutes
+            );
 
-      console.log(
-        rankedRoutes[0].features
-      );
 
-    } else {
+        rankedRoutes.forEach(
+            (route, index) => {
 
-      console.log("No routes available.");
+                console.log(
+                    `${index + 1}. Route ${route.id} → ` +
+                    `${route.score}/100 → ` +
+                    `${route.safetyLevel}`
+                );
+
+            }
+        );
+
+
+        // ----------------------------------------
+        // 6. SAFEST ROUTE
+        // ----------------------------------------
+
+        console.log(
+            "\n6. Safest route:"
+        );
+
+
+        if (rankedRoutes.length > 0) {
+
+            const safestRoute =
+                rankedRoutes[0];
+
+
+            console.log(
+                `Route: ${safestRoute.id}`
+            );
+
+
+            console.log(
+                `Score: ${safestRoute.score}/100`
+            );
+
+
+            console.log(
+                `Level: ${safestRoute.safetyLevel}`
+            );
+
+
+            // ----------------------------------------
+            // SAFETY FACTORS
+            // ----------------------------------------
+
+            console.log(
+                "\nSafety factors:"
+            );
+
+
+            console.log(
+                safestRoute.features
+            );
+
+
+        } else {
+
+            console.log(
+                "No routes available."
+            );
+
+        }
+
+
+        // ----------------------------------------
+        // 7. TEST COMPLETE
+        // ----------------------------------------
+
+        console.log(
+            "\n================================"
+        );
+
+        console.log(
+            "FULL INTEGRATION TEST COMPLETE"
+        );
+
+        console.log(
+            "================================"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "\n================================"
+        );
+
+        console.error(
+            "INTEGRATION TEST FAILED"
+        );
+
+        console.error(
+            "================================"
+        );
+
+        console.error(error);
 
     }
 
-    // ============================================
-    // 7. TEST COMPLETE
-    // ============================================
-
-    console.log("\n================================");
-    console.log("FULL INTEGRATION TEST COMPLETE");
-    console.log("================================");
-
-  } catch (error) {
-
-    console.error("\n================================");
-    console.error("INTEGRATION TEST FAILED");
-    console.error("================================");
-
-    console.error(error);
-
-  }
-
 }
 
-// ============================================
-// RUN TEST
-// ============================================
 
 testFullIntegration();
