@@ -1,12 +1,27 @@
-import React from "react";
-import Map from "./components/Map";
+import { useEffect } from "react";
+import Home from "./pages/Home";
+import { loginAnonymously } from "./services/auth";
 
 function App() {
-  return (
-    <div style={{ width: "100vw", height: "100vh" }}>
-      <Map />
-    </div>
-  );
+  useEffect(() => {
+    const testAuth = async () => {
+      try {
+        const user = await loginAnonymously();
+
+        console.log("✅ Firebase Authentication Working");
+        console.log("User UID:", user.uid);
+      } catch (error) {
+        console.error(
+          "❌ Firebase Authentication Failed:",
+          error
+        );
+      }
+    };
+
+    testAuth();
+  }, []);
+
+  return <Home />;
 }
 
 export default App;
