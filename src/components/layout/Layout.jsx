@@ -1,14 +1,16 @@
 import Navbar from "./Navbar";
-import AnimatedBackground from "./background/AnimatedBackground";
 
-import Hero from "./hero/Hero";
+import AnimatedBackground from "../background/AnimatedBackground";
 
-import WhySafeRoute from "./sections/WhySafeRoute";
-import JourneySection from "./sections/JourneySection";
+import Hero from "../hero/Hero";
 
-import MiniMap from "./map/MiniMap";
-import Statistics from "./sections/Statistics";
-import Footer from "./sections/Footer";
+import WhySafeRoute from "../sections/WhySafeRoute";
+import JourneySection from "../sections/JourneySection";
+import Statistics from "../sections/Statistics";
+
+import MiniMap from "../map/MiniMap";
+
+import Footer from "./Footer";
 
 export default function Layout() {
   return (
@@ -41,7 +43,7 @@ export default function Layout() {
         {/* Footer */}
         <Footer />
 
-        <MiniMap />
+       
 
       </main>
 
