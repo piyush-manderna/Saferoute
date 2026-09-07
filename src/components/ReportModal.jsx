@@ -32,13 +32,12 @@ export default function ReportModal({ isOpen, onClose, onSubmit }) {
     setSubmitting(true);
     try {
       await onSubmit({
-        category,
-        customCategory: category === "other" ? customCategory.trim() : null,
-        description,
-        location: null,  // TODO: needs real [lat, lng] once map/geolocation is ready
-        status: "pending",
-        // reporterID + timestamp: handled by Member 3 on the backend (Firestore serverTimestamp + anon auth uid)
-      });
+    category,
+    customCategory: category === "other" ? customCategory.trim() : null,
+    description,
+    lat: null,   // TODO: waiting on Member 2's map for real coordinates
+    lng: null,
+});
       setDescription("");
       setCategory(CATEGORIES[0].value);
       setCustomCategory("");
