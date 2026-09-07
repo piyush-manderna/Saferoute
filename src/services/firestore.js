@@ -3,19 +3,17 @@ import {
   collection, addDoc, getDocs, GeoPoint, Timestamp
 } from "firebase/firestore";
 
-export async function submitReport({ lat, lng, category, description }) {
+export async function submitReport({ category, customCategory, description, lat, lng }) {
   if (!auth.currentUser) throw new Error("User not authenticated yet");
 
   const docRef = await addDoc(collection(db, "reports"), {
-    location: new GeoPoint(lat, lng),
+    location: (lat != null && lng != null) ? new GeoPoint(lat, lng) : null,
     category,
+    customCategory: customCategory ?? null, // kept — required when category === "other"
     description,
     timestamp: Timestamp.now(),
-    upvotes: 0,
-    downvotes: 0,
-    credibilityScore: 0.5,
     status: "pending",
-    reporterId: auth.currentUser.uid
+    reporterID: auth.currentUser.uid
   });
 
   return docRef.id;
